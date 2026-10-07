@@ -1,54 +1,55 @@
 package com.upb.controlmascota.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.upb.controlmascota.ui.theme.auth.AuthViewModel
+import com.upb.controlmascota.ui.theme.auth.LoginScreen
+import com.upb.controlmascota.ui.theme.auth.RegistroScreen
+import com.upb.controlmascota.ui.theme.auth.SplashScreen
 import com.upb.controlmascota.ui.theme.components.PantallaProvisional
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
+    val authViewModel: AuthViewModel = viewModel()
+
     NavHost(navController = navController, startDestination = Routes.SPLASH) {
 
         composable(Routes.SPLASH) {
-            PantallaProvisional(
-                "Splash",
-                listOf("Comenzar" to {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
-                    }
-                })
-            )
+            SplashScreen(alComenzar = {
+                val destino = if (authViewModel.haySesion()) Routes.MASCOTAS else Routes.LOGIN
+                navController.navigate(destino) {
+                    popUpTo(Routes.SPLASH) { inclusive = true }
+                }
+            })
         }
 
         composable(Routes.LOGIN) {
-            PantallaProvisional(
-                "Iniciar sesión",
-                listOf(
-                    "Iniciar sesión" to {
-                        navController.navigate(Routes.MASCOTAS) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
-                        }
-                    },
-                    "Crear cuenta" to { navController.navigate(Routes.REGISTRO) }
-                )
+            LoginScreen(
+                viewModel = authViewModel,
+                alExito = {
+                    navController.navigate(Routes.MASCOTAS) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
+                irARegistro = { navController.navigate(Routes.REGISTRO) }
             )
         }
 
         composable(Routes.REGISTRO) {
-            PantallaProvisional(
-                "Crear cuenta",
-                listOf(
-                    "Registrarme" to {
-                        navController.navigate(Routes.MASCOTAS) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
-                        }
-                    },
-                    "Volver" to { navController.popBackStack() }
-                )
+            RegistroScreen(
+                viewModel = authViewModel,
+                alExito = {
+                    navController.navigate(Routes.MASCOTAS) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
+                alVolver = { navController.popBackStack() }
             )
         }
 
@@ -129,6 +130,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 listOf(
                     "Créditos" to { navController.navigate(Routes.CREDITOS) },
                     "Cerrar sesión" to {
+                        authViewModel.cerrarSesion()
                         navController.navigate(Routes.LOGIN) {
                             popUpTo(Routes.MASCOTAS) { inclusive = true }
                         }
