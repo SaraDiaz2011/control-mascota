@@ -1,66 +1,70 @@
 package com.upb.controlmascota.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.upb.controlmascota.ui.theme.auth.AuthViewModel
+import com.upb.controlmascota.ui.theme.auth.LoginScreen
+import com.upb.controlmascota.ui.theme.auth.RegistroScreen
+import com.upb.controlmascota.ui.theme.auth.SplashScreen
 import com.upb.controlmascota.ui.theme.components.PantallaProvisional
+import com.upb.controlmascota.mascotas.DetalleMascotaScreen
+import com.upb.controlmascota.mascotas.FormMascotaScreen
+import com.upb.controlmascota.mascotas.ListaMascotasScreen
+import com.upb.controlmascota.mascotas.MascotasViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
+    val authViewModel: AuthViewModel = viewModel()
+
     NavHost(navController = navController, startDestination = Routes.SPLASH) {
 
         composable(Routes.SPLASH) {
-            PantallaProvisional(
-                "Splash",
-                listOf("Comenzar" to {
-                    navController.navigate(Routes.LOGIN) {
-                        popUpTo(Routes.SPLASH) { inclusive = true }
-                    }
-                })
-            )
+            SplashScreen(alComenzar = {
+                val destino = if (authViewModel.haySesion()) Routes.MASCOTAS else Routes.LOGIN
+                navController.navigate(destino) {
+                    popUpTo(Routes.SPLASH) { inclusive = true }
+                }
+            })
         }
 
         composable(Routes.LOGIN) {
-            PantallaProvisional(
-                "Iniciar sesión",
-                listOf(
-                    "Iniciar sesión" to {
-                        navController.navigate(Routes.MASCOTAS) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
-                        }
-                    },
-                    "Crear cuenta" to { navController.navigate(Routes.REGISTRO) }
-                )
+            LoginScreen(
+                viewModel = authViewModel,
+                alExito = {
+                    navController.navigate(Routes.MASCOTAS) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
+                irARegistro = { navController.navigate(Routes.REGISTRO) }
             )
         }
 
         composable(Routes.REGISTRO) {
-            PantallaProvisional(
-                "Crear cuenta",
-                listOf(
-                    "Registrarme" to {
-                        navController.navigate(Routes.MASCOTAS) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
-                        }
-                    },
-                    "Volver" to { navController.popBackStack() }
-                )
+            RegistroScreen(
+                viewModel = authViewModel,
+                alExito = {
+                    navController.navigate(Routes.MASCOTAS) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
+                alVolver = { navController.popBackStack() }
             )
         }
 
         composable(Routes.MASCOTAS) {
-            PantallaProvisional(
-                "Mis mascotas",
-                listOf(
-                    "Ver detalle (mascota 1)" to { navController.navigate(Routes.detalle(1)) },
-                    "+ Agregar mascota" to { navController.navigate(Routes.formMascota()) },
-                    "Próximas vacunas" to { navController.navigate(Routes.PROXIMAS) },
-                    "Configuración" to { navController.navigate(Routes.CONFIGURACION) }
-                )
+            val vm: MascotasViewModel = viewModel()
+            ListaMascotasScreen(
+                viewModel = vm,
+                alAbrir = { id -> navController.navigate(Routes.detalle(id)) },
+                alAgregar = { navController.navigate(Routes.formMascota()) },
+                alIrAProximas = { navController.navigate(Routes.PROXIMAS) },
+                alIrAConfiguracion = { navController.navigate(Routes.CONFIGURACION) }
             )
         }
 
@@ -69,13 +73,13 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             arguments = listOf(navArgument(Routes.ARG_MASCOTA_ID) { type = NavType.LongType })
         ) { entrada ->
             val id = entrada.arguments?.getLong(Routes.ARG_MASCOTA_ID) ?: 0L
-            PantallaProvisional(
-                "Detalle de mascota #$id",
-                listOf(
-                    "Editar" to { navController.navigate(Routes.formMascota(id)) },
-                    "+ Agregar vacuna" to { navController.navigate(Routes.formRegistro(id)) },
-                    "Volver" to { navController.popBackStack() }
-                )
+            val vm: MascotasViewModel = viewModel()
+            DetalleMascotaScreen(
+                viewModel = vm,
+                mascotaId = id,
+                alVolver = { navController.popBackStack() },
+                alEditar = { navController.navigate(Routes.formMascota(id)) },
+                alAgregarRegistro = { navController.navigate(Routes.formRegistro(id)) }
             )
         }
 
@@ -89,13 +93,11 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             )
         ) { entrada ->
             val id = entrada.arguments?.getLong(Routes.ARG_MASCOTA_ID) ?: -1L
-            val titulo = if (id == -1L) "Nueva mascota" else "Editar mascota #$id"
-            PantallaProvisional(
-                titulo,
-                listOf(
-                    "Guardar" to { navController.popBackStack() },
-                    "Cancelar" to { navController.popBackStack() }
-                )
+            val vm: MascotasViewModel = viewModel()
+            FormMascotaScreen(
+                viewModel = vm,
+                mascotaId = if (id == -1L) null else id,
+                alTerminar = { navController.popBackStack() }
             )
         }
 
@@ -129,6 +131,7 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 listOf(
                     "Créditos" to { navController.navigate(Routes.CREDITOS) },
                     "Cerrar sesión" to {
+                        authViewModel.cerrarSesion()
                         navController.navigate(Routes.LOGIN) {
                             popUpTo(Routes.MASCOTAS) { inclusive = true }
                         }
