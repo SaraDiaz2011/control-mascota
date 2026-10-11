@@ -13,6 +13,10 @@ import com.upb.controlmascota.ui.theme.auth.LoginScreen
 import com.upb.controlmascota.ui.theme.auth.RegistroScreen
 import com.upb.controlmascota.ui.theme.auth.SplashScreen
 import com.upb.controlmascota.ui.theme.components.PantallaProvisional
+import com.upb.controlmascota.mascotas.DetalleMascotaScreen
+import com.upb.controlmascota.mascotas.FormMascotaScreen
+import com.upb.controlmascota.mascotas.ListaMascotasScreen
+import com.upb.controlmascota.mascotas.MascotasViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
@@ -54,14 +58,13 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Routes.MASCOTAS) {
-            PantallaProvisional(
-                "Mis mascotas",
-                listOf(
-                    "Ver detalle (mascota 1)" to { navController.navigate(Routes.detalle(1)) },
-                    "+ Agregar mascota" to { navController.navigate(Routes.formMascota()) },
-                    "Próximas vacunas" to { navController.navigate(Routes.PROXIMAS) },
-                    "Configuración" to { navController.navigate(Routes.CONFIGURACION) }
-                )
+            val vm: MascotasViewModel = viewModel()
+            ListaMascotasScreen(
+                viewModel = vm,
+                alAbrir = { id -> navController.navigate(Routes.detalle(id)) },
+                alAgregar = { navController.navigate(Routes.formMascota()) },
+                alIrAProximas = { navController.navigate(Routes.PROXIMAS) },
+                alIrAConfiguracion = { navController.navigate(Routes.CONFIGURACION) }
             )
         }
 
@@ -70,13 +73,13 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             arguments = listOf(navArgument(Routes.ARG_MASCOTA_ID) { type = NavType.LongType })
         ) { entrada ->
             val id = entrada.arguments?.getLong(Routes.ARG_MASCOTA_ID) ?: 0L
-            PantallaProvisional(
-                "Detalle de mascota #$id",
-                listOf(
-                    "Editar" to { navController.navigate(Routes.formMascota(id)) },
-                    "+ Agregar vacuna" to { navController.navigate(Routes.formRegistro(id)) },
-                    "Volver" to { navController.popBackStack() }
-                )
+            val vm: MascotasViewModel = viewModel()
+            DetalleMascotaScreen(
+                viewModel = vm,
+                mascotaId = id,
+                alVolver = { navController.popBackStack() },
+                alEditar = { navController.navigate(Routes.formMascota(id)) },
+                alAgregarRegistro = { navController.navigate(Routes.formRegistro(id)) }
             )
         }
 
@@ -90,13 +93,11 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             )
         ) { entrada ->
             val id = entrada.arguments?.getLong(Routes.ARG_MASCOTA_ID) ?: -1L
-            val titulo = if (id == -1L) "Nueva mascota" else "Editar mascota #$id"
-            PantallaProvisional(
-                titulo,
-                listOf(
-                    "Guardar" to { navController.popBackStack() },
-                    "Cancelar" to { navController.popBackStack() }
-                )
+            val vm: MascotasViewModel = viewModel()
+            FormMascotaScreen(
+                viewModel = vm,
+                mascotaId = if (id == -1L) null else id,
+                alTerminar = { navController.popBackStack() }
             )
         }
 
