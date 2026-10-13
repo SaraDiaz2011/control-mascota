@@ -18,6 +18,8 @@ import com.upb.controlmascota.mascotas.DetalleMascotaScreen
 import com.upb.controlmascota.mascotas.FormMascotaScreen
 import com.upb.controlmascota.mascotas.ListaMascotasScreen
 import com.upb.controlmascota.mascotas.MascotasViewModel
+import com.upb.controlmascota.salud.FormRegistroScreen
+import com.upb.controlmascota.salud.SaludViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
