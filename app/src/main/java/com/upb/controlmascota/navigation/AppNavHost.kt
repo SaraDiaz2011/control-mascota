@@ -12,6 +12,8 @@ import com.upb.controlmascota.ui.theme.auth.AuthViewModel
 import com.upb.controlmascota.ui.theme.auth.LoginScreen
 import com.upb.controlmascota.ui.theme.auth.RegistroScreen
 import com.upb.controlmascota.ui.theme.auth.SplashScreen
+import com.upb.controlmascota.recordatorios.ProximasScreen
+import com.upb.controlmascota.recordatorios.ProximasViewModel
 import com.upb.controlmascota.ui.theme.components.PantallaProvisional
 import com.upb.controlmascota.mascotas.DetalleMascotaScreen
 import com.upb.controlmascota.mascotas.FormMascotaScreen
@@ -116,12 +118,11 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
         }
 
         composable(Routes.PROXIMAS) {
-            PantallaProvisional(
-                "Próximas vacunas",
-                listOf(
-                    "Mis mascotas" to { navController.navigate(Routes.MASCOTAS) },
-                    "Volver" to { navController.popBackStack() }
-                )
+            val vm: ProximasViewModel = viewModel()
+            ProximasScreen(
+                viewModel = vm,
+                usuarioId = authViewModel.usuarioActualId(),
+                alVolver = { navController.popBackStack() }
             )
         }
 
