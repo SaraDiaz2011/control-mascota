@@ -17,6 +17,8 @@ import com.upb.controlmascota.mascotas.DetalleMascotaScreen
 import com.upb.controlmascota.mascotas.FormMascotaScreen
 import com.upb.controlmascota.mascotas.ListaMascotasScreen
 import com.upb.controlmascota.mascotas.MascotasViewModel
+import com.upb.controlmascota.salud.FormRegistroScreen
+import com.upb.controlmascota.salud.SaludViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
@@ -79,7 +81,10 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 mascotaId = id,
                 alVolver = { navController.popBackStack() },
                 alEditar = { navController.navigate(Routes.formMascota(id)) },
-                alAgregarRegistro = { navController.navigate(Routes.formRegistro(id)) }
+                alAgregarRegistro = { navController.navigate(Routes.formRegistro(id)) },
+                alEditarRegistro = { registroId ->
+                    navController.navigate(Routes.formRegistro(id, registroId))
+                }
             )
         }
 
@@ -103,15 +108,22 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
 
         composable(
             route = Routes.FORM_REGISTRO,
-            arguments = listOf(navArgument(Routes.ARG_MASCOTA_ID) { type = NavType.LongType })
+            arguments = listOf(
+                navArgument(Routes.ARG_MASCOTA_ID) { type = NavType.LongType },
+                navArgument(Routes.ARG_REGISTRO_ID) {
+                    type = NavType.LongType
+                    defaultValue = -1L
+                }
+            )
         ) { entrada ->
-            val id = entrada.arguments?.getLong(Routes.ARG_MASCOTA_ID) ?: 0L
-            PantallaProvisional(
-                "Nuevo registro de salud (mascota #$id)",
-                listOf(
-                    "Guardar" to { navController.popBackStack() },
-                    "Cancelar" to { navController.popBackStack() }
-                )
+            val mascotaId = entrada.arguments?.getLong(Routes.ARG_MASCOTA_ID) ?: 0L
+            val registroId = entrada.arguments?.getLong(Routes.ARG_REGISTRO_ID) ?: -1L
+            val vm: SaludViewModel = viewModel()
+            FormRegistroScreen(
+                viewModel = vm,
+                mascotaId = mascotaId,
+                registroId = if (registroId == -1L) null else registroId,
+                alTerminar = { navController.popBackStack() }
             )
         }
 

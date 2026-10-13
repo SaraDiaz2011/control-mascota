@@ -39,7 +39,8 @@ fun DetalleMascotaScreen(
     mascotaId: Long,
     alVolver: () -> Unit,
     alEditar: () -> Unit,
-    alAgregarRegistro: () -> Unit
+    alAgregarRegistro: () -> Unit,
+    alEditarRegistro: (Long) -> Unit = {}
 ) {
     val flujo = remember(mascotaId) { viewModel.observar(mascotaId) }
     val mascota by flujo.collectAsStateWithLifecycle(initialValue = null)
@@ -99,7 +100,11 @@ fun DetalleMascotaScreen(
                         }
                     }
 
-                    HistorialSalud(mascotaId = m.id, alAgregar = alAgregarRegistro)
+                    HistorialSalud(
+                        mascotaId = m.id,
+                        alAgregar = alAgregarRegistro,
+                        alEditar = alEditarRegistro
+                    )
 
                     if (!confirmarEliminar) {
                         OutlinedButton(
