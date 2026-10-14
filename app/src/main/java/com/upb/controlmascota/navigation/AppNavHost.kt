@@ -8,6 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.upb.controlmascota.configuracion.ConfiguracionScreen
+import com.upb.controlmascota.configuracion.ConfiguracionViewModel
+import com.upb.controlmascota.configuracion.CreditosScreen
 import com.upb.controlmascota.ui.theme.auth.AuthViewModel
 import com.upb.controlmascota.ui.theme.auth.LoginScreen
 import com.upb.controlmascota.ui.theme.auth.RegistroScreen
@@ -152,26 +155,22 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Routes.CONFIGURACION) {
-                PantallaProvisional(
-                    "Configuración",
-                    listOf(
-                        "Créditos" to { navController.navigate(Routes.CREDITOS) },
-                        "Cerrar sesión" to {
-                            authViewModel.cerrarSesion()
-                            navController.navigate(Routes.LOGIN) {
-                                popUpTo(Routes.MASCOTAS) { inclusive = true }
-                            }
-                        },
-                        "Volver" to { navController.popBackStack() }
-                    )
+                val vm: ConfiguracionViewModel = viewModel()
+                ConfiguracionScreen(
+                    viewModel = vm,
+                    alAbrirMenu = abrirMenu,
+                    alIrACreditos = { navController.navigate(Routes.CREDITOS) },
+                    alCerrarSesion = {
+                        authViewModel.cerrarSesion()
+                        navController.navigate(Routes.LOGIN) {
+                            popUpTo(Routes.MASCOTAS) { inclusive = true }
+                        }
+                    }
                 )
             }
 
             composable(Routes.CREDITOS) {
-                PantallaProvisional(
-                    "Créditos",
-                    listOf("Volver" to { navController.popBackStack() })
-                )
+                CreditosScreen(alVolver = { navController.popBackStack() })
             }
         }
     }
