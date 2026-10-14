@@ -13,11 +13,14 @@ object Routes {
     const val ARG_MASCOTA_ID = "mascotaId"
     const val DETALLE = "detalle/{$ARG_MASCOTA_ID}"
     const val FORM_MASCOTA = "form_mascota?$ARG_MASCOTA_ID={$ARG_MASCOTA_ID}"
-    const val FORM_REGISTRO = "form_registro/{$ARG_MASCOTA_ID}"
+    const val ARG_REGISTRO_ID = "registroId"
+    const val FORM_REGISTRO = "form_registro/{$ARG_MASCOTA_ID}?$ARG_REGISTRO_ID={$ARG_REGISTRO_ID}"
 
     // Funciones para construir la ruta con el id real
     fun detalle(mascotaId: Long) = "detalle/$mascotaId"
     fun formMascota(mascotaId: Long? = null) =
         if (mascotaId == null) "form_mascota" else "form_mascota?$ARG_MASCOTA_ID=$mascotaId"
-    fun formRegistro(mascotaId: Long) = "form_registro/$mascotaId"
+    fun formRegistro(mascotaId: Long, registroId: Long? = null) =
+        if (registroId == null) "form_registro/$mascotaId"
+        else "form_registro/$mascotaId?$ARG_REGISTRO_ID=$registroId"
 }

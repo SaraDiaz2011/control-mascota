@@ -18,13 +18,16 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -48,46 +51,52 @@ import com.upb.controlmascota.util.Fechas
 fun ProximasScreen(
     viewModel: ProximasViewModel,
     usuarioId: Long,
-    alVolver: () -> Unit
+    alAbrirMenu: () -> Unit
 ) {
     val flujo = remember(usuarioId) { viewModel.proximos(usuarioId) }
     val proximos by flujo.collectAsStateWithLifecycle(initialValue = emptyList())
     val hoy = remember { Recordatorios.hoyUtc() }
 
+    // Sin barra inferior propia: la pone MenuPrincipal
     Surface(modifier = Modifier.fillMaxSize()) {
-        Column(modifier = Modifier.fillMaxSize().safeDrawingPadding()) {
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TextButton(onClick = alVolver) { Text("← Volver") }
-            }
-
-            Column(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .safeDrawingPadding()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = alAbrirMenu) {
+                    Icon(Icons.Filled.Menu, contentDescription = "Abrir menú")
+                }
                 Text(
                     "Próximas vacunas",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold
                 )
+            }
 
-                AvisoPermiso()
+            AvisoPermiso()
 
-                if (proximos.isEmpty()) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text(
-                            "No hay fechas próximas.\nAgrega la próxima dosis en el historial de cada mascota.",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center
-                        )
-                    }
-                } else {
-                    LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        items(proximos, key = { it.registro.id }) { item ->
-                            TarjetaProximo(item, hoy)
-                        }
+            if (proximos.isEmpty()) {
+                Box(
+                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        "No hay fechas próximas.\nAgrega la próxima dosis en el historial de cada mascota.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(proximos, key = { it.registro.id }) { item ->
+                        TarjetaProximo(item, hoy)
                     }
                 }
             }

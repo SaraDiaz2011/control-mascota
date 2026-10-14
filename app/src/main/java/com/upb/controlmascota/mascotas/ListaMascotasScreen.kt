@@ -15,13 +15,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -40,8 +43,7 @@ fun ListaMascotasScreen(
     viewModel: MascotasViewModel,
     alAbrir: (Long) -> Unit,
     alAgregar: () -> Unit,
-    alIrAProximas: () -> Unit,
-    alIrAConfiguracion: () -> Unit
+    alAbrirMenu: () -> Unit
 ) {
     val mascotas by viewModel.mascotas.collectAsStateWithLifecycle()
     val busqueda by viewModel.busqueda.collectAsStateWithLifecycle()
@@ -54,11 +56,16 @@ fun ListaMascotasScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                "Mis mascotas",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = alAbrirMenu) {
+                    Icon(Icons.Filled.Menu, contentDescription = "Abrir menú")
+                }
+                Text(
+                    "Mis mascotas",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             OutlinedTextField(
                 value = busqueda,
                 onValueChange = { viewModel.busqueda.value = it },
@@ -69,7 +76,9 @@ fun ListaMascotasScreen(
 
             if (mascotas.isEmpty()) {
                 Box(
-                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -92,24 +101,19 @@ fun ListaMascotasScreen(
 
             Button(
                 onClick = alAgregar,
-                modifier = Modifier.fillMaxWidth().height(48.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
             ) { Text("+ Agregar mascota") }
-
-            // Provisional: luego se reemplaza por el menú inferior
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                TextButton(onClick = alIrAProximas) { Text("Próximas vacunas") }
-                TextButton(onClick = alIrAConfiguracion) { Text("Configuración") }
-            }
         }
     }
 }
 
 @Composable
 private fun TarjetaMascota(mascota: Mascota, alClic: () -> Unit) {
-    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = alClic)) {
+    Card(modifier = Modifier
+        .fillMaxWidth()
+        .clickable(onClick = alClic)) {
         Row(
             modifier = Modifier.padding(12.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
