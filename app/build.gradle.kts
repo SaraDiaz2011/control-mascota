@@ -45,6 +45,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation("androidx.compose.material:material-icons-core:1.7.8")
 
     // ViewModel y Navigation
     implementation(libs.androidx.lifecycle.viewmodel.compose)
