@@ -13,6 +13,7 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.upb.controlmascota.MainActivity
 import com.upb.controlmascota.R
+import com.upb.controlmascota.util.Fechas
 import com.upb.controlmascota.data.AppDatabase
 import com.upb.controlmascota.data.SesionManager
 import kotlinx.coroutines.flow.first
@@ -27,7 +28,7 @@ class RecordatorioWorker(
         val usuarioId = SesionManager(context).usuarioActual()
         if (usuarioId == -1L || !puedeNotificar()) return Result.success()
 
-        val hoy = Recordatorios.hoyUtc()
+        val hoy = Fechas.hoy()
         val proximos = AppDatabase.obtener(context)
             .registroSaludDao()
             .proximos(usuarioId, hoy)

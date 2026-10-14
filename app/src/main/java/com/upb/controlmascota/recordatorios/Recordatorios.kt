@@ -9,9 +9,8 @@ import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.upb.controlmascota.util.Fechas
 import com.upb.controlmascota.data.TipoRegistro
-import java.util.Calendar
-import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 object Recordatorios {
@@ -54,23 +53,7 @@ object Recordatorios {
         }
     }
 
-    /**
-     * Medianoche de hoy en UTC. Las fechas se guardan como medianoche UTC del día elegido,
-     * así que se toma el día local y se arma en UTC para poder compararlas.
-     */
-    fun hoyUtc(): Long {
-        val local = Calendar.getInstance()
-        return Calendar.getInstance(TimeZone.getTimeZone("UTC")).apply {
-            clear()
-            set(
-                local.get(Calendar.YEAR),
-                local.get(Calendar.MONTH),
-                local.get(Calendar.DAY_OF_MONTH)
-            )
-        }.timeInMillis
-    }
-
-    fun diasHasta(fecha: Long, hoy: Long = hoyUtc()): Long = (fecha - hoy) / DIA_MS
+    fun diasHasta(fecha: Long, hoy: Long = Fechas.hoy()): Long = (fecha - hoy) / DIA_MS
 
     /** "Hoy", "Mañana" o "En 5 días". */
     fun textoDias(dias: Long): String = when (dias) {

@@ -64,7 +64,7 @@ fun HistorialSalud(
 
 @Composable
 private fun TarjetaRegistro(registro: RegistroSalud, alTocar: () -> Unit) {
-    val hoy = System.currentTimeMillis()
+    val hoy = Fechas.hoy()
     val vencido = registro.proximaFecha != null && registro.proximaFecha < hoy
 
     Card(onClick = alTocar, modifier = Modifier.fillMaxWidth()) {

@@ -55,7 +55,7 @@ fun ProximasScreen(
 ) {
     val flujo = remember(usuarioId) { viewModel.proximos(usuarioId) }
     val proximos by flujo.collectAsStateWithLifecycle(initialValue = emptyList())
-    val hoy = remember { Recordatorios.hoyUtc() }
+    val hoy = remember { Fechas.hoy() }
 
     // Sin barra inferior propia: la pone MenuPrincipal
     Surface(modifier = Modifier.fillMaxSize()) {
