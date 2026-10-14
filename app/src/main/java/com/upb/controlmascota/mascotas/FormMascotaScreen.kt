@@ -148,7 +148,7 @@ fun FormMascotaScreen(
                             nombre.isBlank() -> "Escribe el nombre de la mascota"
                             fechaDigitos.isNotBlank() && f == null ->
                                 "La fecha no es válida (usa dd/mm/aaaa)"
-                            f != null && f > System.currentTimeMillis() ->
+                            f != null && f > Fechas.hoy() ->
                                 "La fecha de nacimiento no puede ser futura"
                             peso.isNotBlank() && (pesoNum == null || pesoNum <= 0.0) ->
                                 "El peso no es válido"
