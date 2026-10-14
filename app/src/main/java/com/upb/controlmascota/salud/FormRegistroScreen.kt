@@ -159,7 +159,7 @@ fun FormRegistroScreen(
                         error = when {
                             nombre.isBlank() -> "Escribe el nombre del registro"
                             aplicada == null -> "La fecha no es válida (usa dd/mm/aaaa)"
-                            !esCita && aplicada > System.currentTimeMillis() ->
+                            !esCita && aplicada > Fechas.hoy() ->
                                 "La fecha de aplicación no puede ser futura"
                             proximaDigitos.isNotBlank() && proxima == null ->
                                 "La próxima fecha no es válida (usa dd/mm/aaaa)"

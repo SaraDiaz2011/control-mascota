@@ -10,6 +10,23 @@ import java.util.TimeZone
 object Fechas {
     private val utc = TimeZone.getTimeZone("UTC")
 
+    /**
+     * Hoy, guardado igual que las demás fechas: medianoche UTC del día local.
+     * Úsalo para comparar fechas en vez de System.currentTimeMillis(): en Colombia (UTC-5),
+     * después de las 7 p. m. la hora actual ya cae en el día siguiente en UTC.
+     */
+    fun hoy(): Long {
+        val local = Calendar.getInstance()
+        return Calendar.getInstance(utc).apply {
+            clear()
+            set(
+                local.get(Calendar.YEAR),
+                local.get(Calendar.MONTH),
+                local.get(Calendar.DAY_OF_MONTH)
+            )
+        }.timeInMillis
+    }
+
     fun formatear(millis: Long): String =
         SimpleDateFormat("dd/MM/yyyy", Locale("es", "CO"))
             .apply { timeZone = utc }

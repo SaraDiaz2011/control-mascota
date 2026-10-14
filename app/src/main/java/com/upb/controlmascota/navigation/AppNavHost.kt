@@ -20,6 +20,8 @@ import com.upb.controlmascota.mascotas.ListaMascotasScreen
 import com.upb.controlmascota.mascotas.MascotasViewModel
 import com.upb.controlmascota.salud.FormRegistroScreen
 import com.upb.controlmascota.salud.SaludViewModel
+import com.upb.controlmascota.recordatorios.ProximasScreen
+import com.upb.controlmascota.recordatorios.ProximasViewModel
 
 @Composable
 fun AppNavHost(navController: NavHostController = rememberNavController()) {
@@ -94,7 +96,10 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                     mascotaId = id,
                     alVolver = { navController.popBackStack() },
                     alEditar = { navController.navigate(Routes.formMascota(id)) },
-                    alAgregarRegistro = { navController.navigate(Routes.formRegistro(id)) }
+                    alAgregarRegistro = { navController.navigate(Routes.formRegistro(id)) },
+                    alEditarRegistro = { registroId ->
+                        navController.navigate(Routes.formRegistro(id, registroId))
+                    }
                 )
             }
 
@@ -116,8 +121,6 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
                 )
             }
 
-            // >>> AQUÍ VA EL BLOQUE DE TU COMPAÑERO (vacunas) <<<
-            // Reemplaza este bloque provisional por el suyo si lo copiaste en el Paso 1.
             composable(
                 route = Routes.FORM_REGISTRO,
                 arguments = listOf(
@@ -140,12 +143,11 @@ fun AppNavHost(navController: NavHostController = rememberNavController()) {
             }
 
             composable(Routes.PROXIMAS) {
-                PantallaProvisional(
-                    "Próximas vacunas",
-                    listOf(
-                        "Mis mascotas" to { navController.navigate(Routes.MASCOTAS) },
-                        "Volver" to { navController.popBackStack() }
-                    )
+                val vm: ProximasViewModel = viewModel()
+                ProximasScreen(
+                    viewModel = vm,
+                    usuarioId = authViewModel.usuarioActualId(),
+                    alAbrirMenu = abrirMenu
                 )
             }
 
