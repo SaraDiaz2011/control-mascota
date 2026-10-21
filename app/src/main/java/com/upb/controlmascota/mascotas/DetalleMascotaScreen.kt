@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
@@ -107,12 +108,13 @@ fun DetalleMascotaScreen(
                     )
 
                     if (!confirmarEliminar) {
-                        OutlinedButton(
+                        Button(
                             onClick = { confirmarEliminar = true },
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                contentColor = MaterialTheme.colorScheme.error
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.error,
+                                contentColor = MaterialTheme.colorScheme.onError
                             ),
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth().height(52.dp)
                         ) { Text("Eliminar mascota") }
                     } else {
                         Card(
@@ -125,8 +127,15 @@ fun DetalleMascotaScreen(
                                 modifier = Modifier.padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
-                                Text("¿Eliminar a ${m.nombre}?", fontWeight = FontWeight.Bold)
-                                Text("También se borrarán sus vacunas y registros de salud.")
+                                Text(
+                                    "¿Eliminar a ${m.nombre}?",
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                                Text(
+                                    "También se borrarán sus vacunas y registros de salud.",
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(12.dp)
