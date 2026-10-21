@@ -8,6 +8,7 @@ import android.os.Build
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +17,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Button
@@ -45,7 +48,14 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.upb.controlmascota.data.RegistroConMascota
+import com.upb.controlmascota.ui.components.ChipEstado
+import com.upb.controlmascota.ui.components.EstadoVacuna
+import com.upb.controlmascota.ui.components.EstadosVacuna
 import com.upb.controlmascota.util.Fechas
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
 
 @Composable
 fun ProximasScreen(
@@ -91,12 +101,37 @@ fun ProximasScreen(
                     )
                 }
             } else {
+                val vencidas = proximos.filter {
+                    EstadosVacuna.desde(it.registro.proximaFecha) == EstadoVacuna.VENCIDA
+                }
+                val estaSemana = proximos.filter {
+                    val fecha = it.registro.proximaFecha ?: return@filter false
+                    val dias = Recordatorios.diasHasta(fecha, hoy)
+                    dias in 0..6
+                }
+                val idsEstaSemana = estaSemana.map { it.registro.id }.toSet()
+                val masAdelante = proximos.filter {
+                    val estado = EstadosVacuna.desde(it.registro.proximaFecha)
+                    estado != EstadoVacuna.VENCIDA && it.registro.id !in idsEstaSemana
+                }
+
                 LazyColumn(
                     modifier = Modifier.weight(1f),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(proximos, key = { it.registro.id }) { item ->
-                        TarjetaProximo(item, hoy)
+                    if (vencidas.isNotEmpty()) {
+                        item { TituloGrupo("Vencida", EstadoVacuna.VENCIDA) }
+                        items(vencidas, key = { it.registro.id }) { TarjetaProximo(it) }
+                    }
+                    if (estaSemana.isNotEmpty()) {
+                        item { TituloGrupo("Esta semana", EstadoVacuna.PROXIMA) }
+                        items(estaSemana, key = { it.registro.id }) { TarjetaProximo(it) }
+                    }
+                    if (masAdelante.isNotEmpty()) {
+                        item { TituloGrupo("Más adelante", EstadoVacuna.AL_DIA) }
+                        items(masAdelante, key = { "adelante-${it.registro.id}" }) {
+                            TarjetaProximo(it)
+                        }
                     }
                 }
             }
@@ -105,21 +140,49 @@ fun ProximasScreen(
 }
 
 @Composable
-private fun TarjetaProximo(item: RegistroConMascota, hoy: Long) {
+private fun TituloGrupo(titulo: String, estado: EstadoVacuna) {
+    Text(
+        titulo,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold,
+        color = EstadosVacuna.colorTexto(estado),
+        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+    )
+}
+
+@Composable
+private fun TarjetaProximo(item: RegistroConMascota) {
     val fecha = item.registro.proximaFecha ?: return
-    val dias = Recordatorios.diasHasta(fecha, hoy)
-    val urgente = dias <= 3
+    val estado = EstadosVacuna.desde(fecha) ?: EstadoVacuna.PROXIMA
+    val (dia, mes) = diaYMes(fecha)
+    val colorTexto = EstadosVacuna.colorTexto(estado)
+    val colorFondo = EstadosVacuna.colorFondo(estado)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = if (urgente) CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.tertiaryContainer
-        ) else CardDefaults.cardColors()
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Row(
             modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Column(
+                modifier = Modifier
+                    .width(56.dp)
+                    .background(colorFondo, RoundedCornerShape(12.dp))
+                    .padding(vertical = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(dia, fontWeight = FontWeight.Bold, color = colorTexto)
+                Text(
+                    mes,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colorTexto
+                )
+            }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                 Text(
                     "${item.mascotaNombre} · ${item.mascotaEspecie}",
@@ -128,18 +191,24 @@ private fun TarjetaProximo(item: RegistroConMascota, hoy: Long) {
                 )
                 Text(item.registro.nombre, fontWeight = FontWeight.Bold)
                 Text(
-                    "${Recordatorios.textoTipo(item.registro.tipo)} · ${Fechas.formatear(fecha)}",
+                    Recordatorios.textoTipo(item.registro.tipo),
                     style = MaterialTheme.typography.bodySmall
                 )
             }
-            Text(
-                Recordatorios.textoDias(dias),
-                fontWeight = FontWeight.Bold,
-                color = if (urgente) MaterialTheme.colorScheme.error
-                else MaterialTheme.colorScheme.primary
-            )
+            ChipEstado(estado)
         }
     }
+}
+
+private fun diaYMes(millis: Long): Pair<String, String> {
+    val utc = TimeZone.getTimeZone("UTC")
+    val locale = Locale("es", "CO")
+    val dia = SimpleDateFormat("dd", locale).apply { timeZone = utc }.format(Date(millis))
+    val mes = SimpleDateFormat("MMM", locale).apply { timeZone = utc }
+        .format(Date(millis))
+        .replace(".", "")
+        .replaceFirstChar { it.uppercase() }
+    return dia to mes
 }
 
 /** En Android 13+ pide el permiso de notificaciones y, si falta, muestra un aviso. */

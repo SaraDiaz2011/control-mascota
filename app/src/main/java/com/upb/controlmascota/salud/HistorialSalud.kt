@@ -5,8 +5,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -21,6 +27,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.upb.controlmascota.data.RegistroSalud
 import com.upb.controlmascota.data.TipoRegistro
+import com.upb.controlmascota.ui.components.ChipEstado
+import com.upb.controlmascota.ui.components.EstadoVacuna
+import com.upb.controlmascota.ui.components.EstadosVacuna
 import com.upb.controlmascota.util.Fechas
 
 /**
@@ -64,8 +73,15 @@ fun HistorialSalud(
 
 @Composable
 private fun TarjetaRegistro(registro: RegistroSalud, alTocar: () -> Unit) {
-    val hoy = Fechas.hoy()
-    val vencido = registro.proximaFecha != null && registro.proximaFecha < hoy
+    val estado = EstadosVacuna.desde(registro.proximaFecha)
+    val colorEstado = estado?.let { EstadosVacuna.colorTexto(it) }
+        ?: MaterialTheme.colorScheme.primary
+    val iconoEstado = when (estado) {
+        EstadoVacuna.AL_DIA -> Icons.Filled.Check
+        EstadoVacuna.PROXIMA -> Icons.Filled.DateRange
+        EstadoVacuna.VENCIDA -> Icons.Filled.Warning
+        null -> Icons.Filled.DateRange
+    }
 
     Card(onClick = alTocar, modifier = Modifier.fillMaxWidth()) {
         Column(
@@ -73,23 +89,35 @@ private fun TarjetaRegistro(registro: RegistroSalud, alTocar: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    iconoEstado,
+                    contentDescription = estado?.texto,
+                    tint = colorEstado,
+                    modifier = Modifier.size(20.dp).padding(end = 6.dp)
+                )
                 Text(
                     registro.nombre,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
+                estado?.let { ChipEstado(it) }
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "${if (registro.tipo == TipoRegistro.CITA) "Fecha" else "Aplicada"}: " +
+                            Fechas.formatear(registro.fechaAplicada),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 EtiquetaTipo(registro.tipo)
             }
-            Text(
-                "${if (registro.tipo == TipoRegistro.CITA) "Fecha" else "Aplicada"}: " +
-                        Fechas.formatear(registro.fechaAplicada),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
             registro.proximaFecha?.let {
                 Text(
-                    "Próxima: ${Fechas.formatear(it)}" + if (vencido) " (vencida)" else "",
-                    color = if (vencido) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.primary,
+                    "Próxima: ${Fechas.formatear(it)}",
+                    color = colorEstado,
                     fontWeight = FontWeight.Bold
                 )
             }
